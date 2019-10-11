@@ -66,9 +66,11 @@ func setEnvVars(conf *Config, tests bool) error {
 	conf.DestDir = os.Getenv("DESTDIR")
 	conf.LocalRestoreFile = os.Getenv("LOCALRESTOREFILE")
 	if conf.DestDir != "" {
+		log.Printf("using ENV VAR for local snap directory backup %s\n", conf.DestDir)
 		return nil
 	}
 	if conf.LocalRestoreFile != "" {
+		log.Printf("using ENV VAR for local snap directory restrore %s\n", conf.DestDir)
 		return nil
 	}
 
