@@ -20,12 +20,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	consulapi "github.com/hashicorp/consul/api"
-	"github.com/mholt/archiver"
 	"github.com/davidbirdsong/consul-snapshot/backup"
 	"github.com/davidbirdsong/consul-snapshot/config"
 	"github.com/davidbirdsong/consul-snapshot/consul"
 	"github.com/davidbirdsong/consul-snapshot/crypt"
+	consulapi "github.com/hashicorp/consul/api"
+	"github.com/mholt/archiver"
 )
 
 // Restore is a struct to hold data about a single restore
@@ -151,11 +151,11 @@ func getRemoteBackupGoogleStorage(r *Restore, conf *config.Config, outFile *os.F
 // getRemoteBackup is used to pull backups from S3/GoogleStorage
 func getRemoteBackup(r *Restore, conf *config.Config) {
 	r.LocalFilePath = fmt.Sprintf("%v/%v", conf.TmpDir, r.RestorePath)
-	if conf.LocalFilePath != "" {
-		if err := os.Rename(conf.LocalFilePath, r.LocalFilePath); err != nil {
+	if conf.LocalRestoreFile != "" {
+		if err := os.Rename(conf.LocalRestoreFile, r.LocalFilePath); err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("using local file: %s", conf.LocalFilePath)
+		log.Printf("using local file: %s", conf.LocalRestoreFile)
 		return
 	}
 
