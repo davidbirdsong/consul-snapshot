@@ -152,9 +152,7 @@ func getRemoteBackupGoogleStorage(r *Restore, conf *config.Config, outFile *os.F
 func getRemoteBackup(r *Restore, conf *config.Config) {
 	r.LocalFilePath = fmt.Sprintf("%v/%v", conf.TmpDir, r.RestorePath)
 	if conf.LocalRestoreFile != "" {
-		if err := os.Rename(conf.LocalRestoreFile, r.LocalFilePath); err != nil {
-			log.Fatal(err)
-		}
+		r.LocalFilePath = conf.LocalRestoreFile
 		log.Printf("using local file: %s", conf.LocalRestoreFile)
 		return
 	}
