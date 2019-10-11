@@ -73,6 +73,7 @@ func setEnvVars(conf *Config, tests bool) error {
 		log.Printf("using ENV VAR for local snap directory restrore %s\n", conf.DestDir)
 		return nil
 	}
+	log.Println("no local file config found, looking at cloud provide config")
 
 	// if the environment variable isn't set, just set the dir to /tmp
 	if conf.TmpDir == "" {
@@ -106,7 +107,7 @@ func setEnvVars(conf *Config, tests bool) error {
 			envS3Checks := []string{conf.S3Bucket, conf.S3Region}
 			envGCSChecks := []string{conf.GCSBucket}
 			if checkEmpty(envS3Checks) == false && checkEmpty(envGCSChecks) == false {
-				log.Fatal("[ERR] Required env var missing, exiting")
+				log.Fatal("[ERR] Required env var missing, FOO exiting")
 			}
 		}
 
