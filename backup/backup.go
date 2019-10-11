@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,16 +13,17 @@ import (
 	"path/filepath"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	consulapi "github.com/hashicorp/consul/api"
 	"github.com/mholt/archiver"
-	"github.com/pshima/consul-snapshot/config"
-	"github.com/pshima/consul-snapshot/consul"
-	"github.com/pshima/consul-snapshot/crypt"
-	"github.com/pshima/consul-snapshot/health"
+	"github.com/davidbirdsong/consul-snapshot/config"
+	"github.com/davidbirdsong/consul-snapshot/consul"
+	"github.com/davidbirdsong/consul-snapshot/crypt"
+	"github.com/davidbirdsong/consul-snapshot/health"
 )
 
 // Backup is the backup itself including configuration and data
@@ -180,7 +180,6 @@ func doWork(conf *config.Config, client *consul.Consul) error {
 		log.Print("[INFO] Writing Backup to Remote File")
 		b.writeBackupRemote()
 		log.Print("[INFO] Running post processing")
-		b.postProcess()
 	}
 
 	log.Print("[INFO] Backup completed successfully")
@@ -351,8 +350,20 @@ func (b *Backup) writeBackupRemoteGoogleStorage(localFileContents []byte) {
 		log.Fatalf("[ERR] Could not upload to GCS!: %v", err)
 	}
 }
+func (b *Backup) writeBackupLocalFile(localFileContents []byte) {
+
+}
 
 func (b *Backup) writeBackupRemote() {
+	if len(b.Config.DestDir) > 1 {
+		newName := filepath.Join(b.Config.DestDir, filepath.Base(b.FullFilename))
+		if err := os.Rename(b.FullFilename, newName); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("created: %s\n", newName)
+		return
+	}
+
 	t := time.Unix(b.StartTime, 0)
 
 	b.RemoteFilePath = fmt.Sprintf("%s/%v/%d/%v/%v", b.Config.ObjectPrefix, t.Year(), t.Month(), t.Day(), filepath.Base(b.FullFilename))
@@ -363,6 +374,9 @@ func (b *Backup) writeBackupRemote() {
 		log.Fatalf("[ERR] Could not read compressed file!: %v", err)
 	}
 
+	if len(b.Config.DestDir) > 1 {
+		b.writeBackupLocalFile(localFileContents)
+	}
 	if len(b.Config.S3Bucket) > 1 {
 		b.writeBackupRemoteS3(localFileContents)
 	}
@@ -370,33 +384,4 @@ func (b *Backup) writeBackupRemote() {
 	if len(b.Config.GCSBucket) > 1 {
 		b.writeBackupRemoteGoogleStorage(localFileContents)
 	}
-}
-
-// Run post processing on the backup, acking the key and removing and temp files.
-// There are no tests for the remote operation.
-func (b *Backup) postProcess() {
-	// Mark a key in consul for our last backup time.
-	writeOpt := &consulapi.WriteOptions{}
-	startstring := fmt.Sprintf("%v", b.StartTime)
-
-	var err error
-
-	lastbackup := &consulapi.KVPair{Key: "service/consul-snapshot/lastbackup", Value: []byte(startstring)}
-	_, err = b.Client.Client.KV().Put(lastbackup, writeOpt)
-	if err != nil {
-		log.Fatalf("[ERR] Failed writing last backup timestamp to consul: %v", err)
-	}
-
-	// Remove the compressed archive
-	err = os.Remove(b.FullFilename)
-	if err != nil {
-		log.Printf("Unable to remove temporary backup file: %v", err)
-	}
-
-	// Remove the staging path
-	err = os.RemoveAll(b.LocalFilePath)
-	if err != nil {
-		log.Printf("Unable to remove temporary backup file: %v", err)
-	}
-
 }

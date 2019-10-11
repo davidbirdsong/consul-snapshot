@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	"github.com/davidbirdsong/consul-snapshot/command"
 	"github.com/mitchellh/cli"
-	"github.com/pshima/consul-snapshot/command"
 )
 
 var (

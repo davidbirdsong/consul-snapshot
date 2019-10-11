@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/net/context"
 	"io"
 	"io/ioutil"
 	"log"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/net/context"
+
 	"cloud.google.com/go/storage"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -21,10 +22,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	consulapi "github.com/hashicorp/consul/api"
 	"github.com/mholt/archiver"
-	"github.com/pshima/consul-snapshot/backup"
-	"github.com/pshima/consul-snapshot/config"
-	"github.com/pshima/consul-snapshot/consul"
-	"github.com/pshima/consul-snapshot/crypt"
+	"github.com/davidbirdsong/consul-snapshot/backup"
+	"github.com/davidbirdsong/consul-snapshot/config"
+	"github.com/davidbirdsong/consul-snapshot/consul"
+	"github.com/davidbirdsong/consul-snapshot/crypt"
 )
 
 // Restore is a struct to hold data about a single restore
@@ -150,6 +151,13 @@ func getRemoteBackupGoogleStorage(r *Restore, conf *config.Config, outFile *os.F
 // getRemoteBackup is used to pull backups from S3/GoogleStorage
 func getRemoteBackup(r *Restore, conf *config.Config) {
 	r.LocalFilePath = fmt.Sprintf("%v/%v", conf.TmpDir, r.RestorePath)
+	if conf.LocalFilePath != "" {
+		if err := os.Rename(conf.LocalFilePath, r.LocalFilePath); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("using local file: %s", conf.LocalFilePath)
+		return
+	}
 
 	localFileDir := filepath.Dir(r.LocalFilePath)
 

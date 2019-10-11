@@ -31,8 +31,7 @@ func Client() *consulapi.Client {
 // ListKeys lists all the keys from consul with no prefix.
 func (c *Consul) ListKeys() {
 	listOpt := &consulapi.QueryOptions{
-		AllowStale:        false,
-		RequireConsistent: true,
+		AllowStale: true,
 	}
 	keys, _, err := c.Client.KV().List("/", listOpt)
 	if err != nil {
@@ -45,8 +44,7 @@ func (c *Consul) ListKeys() {
 // ListPQs lists all the prepared queries from consul
 func (c *Consul) ListPQs() {
 	listOpt := &consulapi.QueryOptions{
-		AllowStale:        false,
-		RequireConsistent: true,
+		AllowStale: true,
 	}
 	pqs, _, err := c.Client.PreparedQuery().List(listOpt)
 	if err != nil {
@@ -60,8 +58,7 @@ func (c *Consul) ListPQs() {
 // ListACLs lists all the prepared queries from consul
 func (c *Consul) ListACLs() {
 	listOpt := &consulapi.QueryOptions{
-		AllowStale:        false,
-		RequireConsistent: true,
+		AllowStale: true,
 	}
 
 	acls, _, err := c.Client.ACL().List(listOpt)

@@ -26,6 +26,8 @@ type Config struct {
 	ObjectPrefix           string
 	S3ServerSideEncryption string
 	S3KmsKeyID             string
+	DestDir                string
+	LocalRestoreFile       string
 }
 
 // When starting, just set the hostname
@@ -61,6 +63,14 @@ func setEnvVars(conf *Config, tests bool) error {
 	conf.ObjectPrefix = os.Getenv("CONSUL_SNAPSHOT_UPLOAD_PREFIX")
 	conf.S3ServerSideEncryption = os.Getenv("CONSUL_SNAPSHOT_S3_SSE")
 	conf.S3KmsKeyID = os.Getenv("CONSUL_SNAPSHOT_S3_SSE_KMS_KEY_ID")
+	conf.DestDir = os.Getenv("DESTDIR")
+	conf.LocalRestoreFile = os.Getenv("LOCALRESTOREFILE")
+	if conf.DestDir != "" {
+		return nil
+	}
+	if conf.LocalRestoreFile != "" {
+		return nil
+	}
 
 	// if the environment variable isn't set, just set the dir to /tmp
 	if conf.TmpDir == "" {
