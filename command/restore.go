@@ -2,7 +2,8 @@ package command
 
 import (
 	"fmt"
-	"github.com/pshima/consul-snapshot/restore"
+
+	"github.com/davidbirdsong/consul-snapshot/restore"
 )
 
 // RestoreCommand for running restores

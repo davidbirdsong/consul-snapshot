@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/davidbirdsong/consul-snapshot/backup"
 	"github.com/mitchellh/cli"
-	"github.com/pshima/consul-snapshot/backup"
 )
 
 // BackupCommand for running backups
